@@ -4,8 +4,76 @@ from pymupdf4llm import to_markdown
 from re import findall
 from PIL import Image
 import unicodedata
+import os
+from numpy import array
 
-def get_images(file_contet: str) -> list:
+CONNECTED_TREASHOLD = 0.6
+
+def are_images_connected(img1:Image.Image,img2:Image.Image) -> bool:
+
+    r = min((img1.width,img2.width))
+    effect = 0
+
+    img1 = array(img1)
+    img2 = array(img2)
+
+    for i in range(r):
+
+        if img1[-1][i][0] == img2[0][i][0]:
+            effect += 1
+
+    return effect/r >= CONNECTED_TREASHOLD
+
+
+
+def merge_two_images(img_a: Image.Image, img_b: Image.Image) -> Image.Image:
+    
+    w = max(img_a.width, img_b.width)
+    h = img_a.height + img_b.height
+
+    combined = Image.new("RGB", (w, h), "white")
+    combined.paste(img_a, (0, 0))
+    combined.paste(img_b, (0, img_a.height))
+
+    return combined
+
+
+
+def merge_images(file_content:str,image_path:Path) -> str:
+
+    images = get_images(file_content)
+
+    for image in filter(lambda img_data: len(img_data['image'])>1,images):
+
+        connected = 0
+        saved_image=None
+        for i in range(1,len(image['image'])):
+
+            if are_images_connected(image['image'][i-1],image['image'][i]):
+                connected += 1
+                if saved_image == None:
+                    saved_image = merge_two_images(image['image'][i-1],image['image'][i])
+                else:
+                    saved_image = merge_two_images(saved_image,image['image'][i])
+            elif connected > 0:
+                new_image = merge_two_images(saved_image,image['image'][i])
+                saved_image = None
+
+                save_path = f'{image_path}/new0.png'
+                j=1
+                while os.path.isfile(save_path):
+                    save_path = f'{image_path}/new{j}.png'
+                    j += 1
+                new_image.save(save_path)
+                index = file_content.index(image['text'])
+                file_content = (
+                    file_content[:index]
+                    + f"![]({save_path})"
+                    + file_content[index + len(image["text"]):]
+                )
+                connected = 0
+
+def get_images(file_content:str) -> list:
 
     # Matches one or more consecutive ![](images/....png) blocks
     block_pattern = (
@@ -17,12 +85,13 @@ def get_images(file_contet: str) -> list:
     path_pattern = r"!\[\]\((images\/[^)]+)\)"
 
     images = []
-    for block in findall(block_pattern, file_contet):
+    for block in findall(block_pattern, file_content):
         img_paths = findall(path_pattern, block)
+        
         images.append({
             "text": block,
             "paths": img_paths,
-            "images": [Image.open(p) for p in img_paths],
+            "image": [Image.open(img_path) for img_path in img_paths],
         })
 
     return images
@@ -54,7 +123,10 @@ def pdf_handler(file_path:Path) -> Document:
 
     file_content =  unicodedata.normalize("NFC", file_content)
 
-    images = get_images(file_content)
+    file_content = merge_images(file_content,'./images')
 
-    return Document()
+    return Document(
+        file_content,
+        metadata={'source':file_path}
+    )
 

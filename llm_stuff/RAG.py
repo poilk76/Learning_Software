@@ -12,6 +12,7 @@ EMBEDDING_MODEL = OllamaEmbeddings(model='embeddinggemma:300m')
 
 FILE_TYPE_HANDLERS = {
     "md": fth.md_handler,
+    "pdf":fth.pdf_handler
 }
 
 def file_handler(file:Path) -> Document:
@@ -107,12 +108,12 @@ def search_from_db(path:Path,query:str,amount:int=3) -> list[Document]:
 
 if __name__ == "__main__":
 
-    path = Path('./test_data/')
+    path = Path('./test/')
 
     d = data_load(path)
 
     chunks = chunking(d)
 
-    embedding(chunks)
+    #embedding(chunks)
 
-    print(search_from_db(DB_PATH,'Wyjątki w C++'))
+    #print(search_from_db(DB_PATH,'Wyjątki w C++'))
