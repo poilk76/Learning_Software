@@ -1,0 +1,6 @@
+langchain
+langchain_ollama
+langchain_chroma
+langchain-community
+langchain-text-splitters
+pymupdf4llm
