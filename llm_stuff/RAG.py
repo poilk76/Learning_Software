@@ -4,52 +4,9 @@ from langchain_core.documents.base import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_text_splitters.markdown import MarkdownHeaderTextSplitter
 from pathlib import Path
-import os
-import file_types_handlers as fth
 
 DB_PATH = "./test_db"
 EMBEDDING_MODEL = OllamaEmbeddings(model='embeddinggemma:300m')
-
-FILE_TYPE_HANDLERS = {
-    "md": fth.md_handler,
-    "pdf":fth.pdf_handler
-}
-
-def file_handler(file:Path) -> Document:
-
-    file_type = str(file).split('.')[-1]
-
-    if file_type in FILE_TYPE_HANDLERS:
-
-        return FILE_TYPE_HANDLERS[file_type](file)
-
-    else:
-
-        raise TypeError('This file type is not supported.')
-
-
-
-def data_load(path:Path) -> list[Document]:
-
-    # Loads all possible to handle files from directory as Document
-
-    if not os.path.exists(path): raise FileNotFoundError('Directory or file with data to load doesn\'t exist.')
-
-    documents = []
-
-    for directory in os.walk(path):
-
-        files_full_paths:list[Path] = [Path(f'./{directory[0]}/{file_name}') for file_name in directory[-1]]
-        
-        # filter for only possible to handle files
-        files_full_paths = filter(lambda file_path: str(file_path).split('.')[-1] in FILE_TYPE_HANDLERS,files_full_paths)
-
-        for file_path in files_full_paths:
-        
-            documents.append(file_handler(file_path))
-
-    return documents
-
 
 
 def chunking(documents: list[Document]) -> list[Document]:
@@ -106,14 +63,3 @@ def search_from_db(path:Path,query:str,amount:int=3) -> list[Document]:
     return db.similarity_search_with_relevance_scores(query,k=amount)
 
 
-if __name__ == "__main__":
-
-    path = Path('./test/')
-
-    d = data_load(path)
-
-    chunks = chunking(d)
-
-    #embedding(chunks)
-
-    #print(search_from_db(DB_PATH,'Wyjątki w C++'))
