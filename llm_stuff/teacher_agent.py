@@ -1,20 +1,15 @@
-from langchain_ollama import OllamaLLM
 from pydantic import BaseModel
-from langchain_core.output_parsers import PydanticOutputParser
 from langchain.agents import create_agent
+from datetime import datetime
 
-llm = OllamaLLM(model='qwen3.5:0.8b')
-
-class Agent_Response(BaseModel):
-
-    summary:str
-    sources: list[str]
-    tools_used: list[str]
-
-prompt = Chat
 
 agent = create_agent(
-    llm=llm,
-    prompt=prompt,
-    tools=[]
+    model='ollama:gemma4:e2b',
+    tools=[],
 )
+
+res = agent.invoke(
+    {"messages": [{"role":"user","content":"What\'s time is now"}]},
+)
+
+print(res)

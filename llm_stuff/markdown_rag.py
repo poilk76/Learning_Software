@@ -4,6 +4,7 @@ from langchain_core.documents.base import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_text_splitters.markdown import MarkdownHeaderTextSplitter
 from pathlib import Path
+from langchain.tools import tool
 import os
 
 class Knowlage_Base:
@@ -16,7 +17,7 @@ class Knowlage_Base:
 
         self.db_path = path
         self.embedding_model = embedding_model
-        
+
         if os.path.exists(self.db_path):
             self.db = Chroma(
                 persist_directory=self.db_path,
@@ -85,7 +86,7 @@ class Knowlage_Base:
 
         self.__embedding(chunks)
 
-
+    @tool
     def search(self,query:str,amount:int=3) -> list[Document]:
 
         db = Chroma(persist_directory=self.db_path, embedding_function=self.embedding_model)
