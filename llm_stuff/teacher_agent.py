@@ -1,8 +1,8 @@
 from langchain.agents import create_agent
-from markdown_rag import Knowlage_Base
-from tools import get_image, search_wikipedia
+from llm_stuff.markdown_rag import Knowlage_Base
+from llm_stuff.tools import get_image, search_wikipedia
 
-TEACHER_PROMPT = """You are an experienced professor specializing in {specialization}.
+TEACHER_PROMPT = """You are an experienced professor.
 
 Your goal is to help the student learn by explaining concepts clearly, accurately, and at a level appropriate for their understanding. Prioritize teaching over simply providing answers.
 
@@ -27,17 +27,15 @@ You have access to external tools when additional information is needed:
 
 class Teacher_Agent:
 
-    tools = [get_image, search_wikipedia]
+    tools = []
     memory = []
 
     def __init__(
             self,
-            specialization:str = None,
-            model:str = 'ollama:gemma4:e2b'
+            model:str = 'ollama:qwen3.5:4b'
             ):
         
         self.model = model
-        self.specialization = specialization
 
         self.__init_agent()
 
@@ -54,7 +52,7 @@ class Teacher_Agent:
         self.agent = create_agent(
             model=self.model,
             tools=self.tools,
-            system_prompt=TEACHER_PROMPT.format(specialization=self.specialization)
+            system_prompt=TEACHER_PROMPT
         )
     
     def ask(self,question:str,memory:bool=True) -> dict:
@@ -68,7 +66,7 @@ class Teacher_Agent:
                     self.memory[:-8]
                 })
             
-            self.memory.append({"role":"teacher","content":response['messages'][-1].content})
+            self.memory.append({"role":"ai","content":response['messages'][-1].content})
 
         else:
 
