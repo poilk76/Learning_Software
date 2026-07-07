@@ -22,9 +22,6 @@ You have access to external tools when additional information is needed:
 - Use the image retrieval tool whenever you need to inspect or analyze an image before answering.
 - Prefer information retrieved from the user's knowledge base over general sources when both are available.
 - Do not claim to have consulted a source unless you actually used the corresponding tool.
-
-Student's question:
-{question}
 """
 
 
@@ -56,13 +53,31 @@ class Teacher_Agent:
 
         self.agent = create_agent(
             model=self.model,
-            tools=self.tools
+            tools=self.tools,
+            system_prompt=TEACHER_PROMPT.format(specialization=self.specialization)
         )
     
     def ask(self,question:str,memory:bool=True) -> dict:
-        #TODO
 
-        response = self.agent.invoke({"messages":[{"role":"user","content":TEACHER_PROMPT.format(question=question,specialization=self.specialization)}]})
+
+        if memory:
+
+            self.memory.append({"role":"user","content":question})
+            response = self.agent.invoke(
+                {"messages":
+                    self.memory[:-8]
+                })
+            
+            self.memory.append({"role":"teacher","content":response['messages'][-1].content})
+
+        else:
+
+            response = self.agent.invoke(
+                {"messages":
+                    [
+                        {"role":"user","content":question}
+                    ]
+                })
 
         return response
     
