@@ -1,36 +1,17 @@
 from llm_stuff.teacher_agent import Teacher_Agent
-from json import loads
 from learning_resources_generator.util import parse_json
+from json import loads
 
-QUESTIONS_PROMPT = """
-Based on the provided learning materials, generate exactly {questions_amount} multiple-choice questions.
+FLASHCARDS_PROMPT = """
+Based on the provided learning materials, generate flashcards.
 
 Return ONLY a valid JSON array.
 
-[
-  {{
-    "question": "Question text",
-    "answers": [
-      {{
-        "content": "Answer A",
-        "correct": true
-      }},
-      {{
-        "content": "Answer B",
-        "correct": false
-      }},
-      {{
-        "content": "Answer C",
-        "correct": false
-      }},
-      {{
-        "content": "Answer D",
-        "correct": false
-      }}
-    ],
-    "image": null
-  }}
-]
+{{
+    "head 1":"back 1",
+    "head 2":"back 2",
+    ...
+}}
 
 Learning materials:
 
@@ -43,19 +24,12 @@ def check_output(to_check:str) -> bool:
         data = loads(to_check)
     except:
         return False
-    
-    if "question" in data and\
-        "answers" in data:
-
-        if len(data['answers']) == 4:
-            return True
         
-    return False
-
+    return isinstance(data,dict)
 
 def generate(documents:list,agent:Teacher_Agent) -> list:
 
-    questions = []
+    flashcards = []
 
     i = 0
 
@@ -70,9 +44,8 @@ def generate(documents:list,agent:Teacher_Agent) -> list:
 
         while not check_output(response):
 
-            response = parse_json(agent.ask(QUESTIONS_PROMPT.format(
+            response = parse_json(agent.ask(FLASHCARDS_PROMPT.format(
                 materials = document.page_content,
-                questions_amount = (len(document.page_content)//100)+1
             ),False)['messages'][-1].content)
 
             print(response)
@@ -88,11 +61,11 @@ def generate(documents:list,agent:Teacher_Agent) -> list:
         if exit_loop < 3:
 
             addition = loads(response)
-            questions = questions + addition
-            print(f'{i}/{len(documents)} document {document.metadata['source']} are processed succesfully!\n{len(addition)} questions are added!')
+            flashcards = flashcards + addition
+            print(f'{i}/{len(documents)} document {document.metadata['source']} are processed succesfully!\n{len(addition)} flashcards are added!')
 
     print('DONE!')
-    return questions
+    return flashcards
 
         
 

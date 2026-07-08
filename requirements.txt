@@ -6,3 +6,4 @@ langchain-text-splitters
 pymupdf4llm
 pydantic
 wikipedia
+flask

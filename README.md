@@ -1,5 +1,5 @@
 <div align="center">
-<img align="center" src="./assets/Banner.png">
+<img align="center" src="./static/Banner.png">
 </div>
 <br/>
 <p>🦉SmartOwl is an app that helps you prepare for exams by creating personalized study resources from your own learning materials.</p>

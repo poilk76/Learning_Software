@@ -13,6 +13,8 @@ def get_image(path:str) -> str:
     """Load a local image and return it as a base64 data URI."""
 
     mime = guess_type(path)[0] or "image/png"
+
+    print(f'Agent fetch {path}')
     
     with open(path,'rb') as file:
 
@@ -30,4 +32,7 @@ def search_wikipedia(query:str) -> str:
     biographies, scientific concepts, places, organizations, or other
     encyclopedic information.
     """
+
+    print(f'Agent query wikipedia. \n{query}')
+
     return wikipedia.run(query)

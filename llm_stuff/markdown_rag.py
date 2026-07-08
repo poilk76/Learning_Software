@@ -87,14 +87,16 @@ class Knowlage_Base:
         self.__embedding(chunks)
 
     @tool
-    def search(self,query:str,amount:int=3) -> list[Document]:
+    def search(self,query:str) -> list[Document]:
         """Search the user's indexed knowledge base using semantic retrieval. 
         Returns the most relevant passages from user-provided documents to 
         ground responses in retrieved context."""
 
+        print(f'Agent use RAG!\n{query}')
+
         db = Chroma(persist_directory=self.db_path, embedding_function=self.embedding_model)
 
-        result = db.similarity_search_with_relevance_scores(query,k=amount)
+        result = db.similarity_search_with_relevance_scores(query,k=3)
 
         return f'data:query/result;result,{result}'
 

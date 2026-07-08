@@ -27,12 +27,12 @@ You have access to external tools when additional information is needed:
 
 class Teacher_Agent:
 
-    tools = []
+    tools = [get_image,search_wikipedia]
     memory = []
 
     def __init__(
             self,
-            model:str = 'ollama:qwen3.5:4b'
+            model:str = 'ollama:gemma4:e2b'
             ):
         
         self.model = model
